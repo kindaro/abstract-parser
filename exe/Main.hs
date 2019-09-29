@@ -2,6 +2,7 @@ module Main where
 
 import Data.Set (Set)
 import qualified Data.Set as Set
+import Data.Foldable
 
 import Grammar
 import Generator
@@ -17,11 +18,12 @@ exampleGrammar = Grammar
     , start = 'a'
     }
 
-exampleGrammar2 :: Grammar String String
-exampleGrammar2 = Grammar
-    { nonTerminals = Set.fromList ["names", "commaNames", "andName", "finalName", "period"]
-    , terminals    = Set.fromList []
-    , rules = Set.fromList
+teaParty :: Grammar String String
+teaParty = grammar nonTerminals terminals rules start
+  where
+    nonTerminals = Set.fromList ["names", "commaNames", "andName", "finalName", "period"]
+    terminals    = Set.fromList ["Nasiba", "Murat", "Anastasia", ", ", " and ", " have some tea."]
+    rules = Set.fromList
               [ [Left "names"] := [Right "Nasiba", Left "commaNames"]
               , [Left "names"] := [Right "Murat", Left "commaNames"]
               , [Left "names"] := [Right "Anastasia", Left "commaNames"]
@@ -32,8 +34,9 @@ exampleGrammar2 = Grammar
               , [Left "finalName"] := [Right "Anastasia", Left "period"]
               , [Left "period"] := [Right " have some tea."]
               ]
-    , start = "names"
-    }
+    start = "names"
 
 main :: IO ()
-main = print $ take 10 (generate exampleGrammar)
+main = do
+    print $ take 10 (generate exampleGrammar)
+    traverse_ (putStrLn . concat) . take 10 . generate $ teaParty

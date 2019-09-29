@@ -32,7 +32,10 @@ grammar nonTerminals terminals rules start
     | looksGood = Grammar {..}
     | otherwise = error "The grammar does not look good."
   where
+    symbols = Set.map Left nonTerminals `Set.union` Set.map Right terminals
     looksGood = start `Set.member` nonTerminals
+                && (Set.fromList . concatMap leftSide) rules `Set.isSubsetOf` symbols
+                && (Set.fromList . concatMap rightSide) rules `Set.isSubsetOf` symbols
 
 type SententialForm nonTerminal terminal = [Either nonTerminal terminal]
 
