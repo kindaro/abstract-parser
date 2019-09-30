@@ -63,4 +63,4 @@ select i j xs =
   in ((before, after), selection)
 
 deselect :: Selection a -> [a]
-deselect ((before, after), selection) = concat [before, selection, after]
+deselect ((before, after), selection) = concat @[] [before, selection, after]
