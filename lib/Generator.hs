@@ -10,42 +10,34 @@ import Data.Function
 
 import Grammar
 
-generate :: (Eq terminal, Eq nonTerminal)
-         => Grammar nonTerminal terminal -> [Sentence terminal]
+type G = Grammar
+type S σ = Sentence σ
+type SF ν σ = SententialForm ν σ
+
+generate :: (Eq σ, Eq ν) => G ν σ -> [S σ]
 generate g@Grammar{..} = fix (generate' g) [[Left start]]
 
-generate' :: forall terminal nonTerminal. (Eq terminal, Eq nonTerminal)
-          => Grammar nonTerminal terminal
-          -> ( [SententialForm nonTerminal terminal] -> [Sentence terminal] )
-          -> [SententialForm nonTerminal terminal]
-          -> [Sentence terminal]
+generate' :: forall σ ν. (Eq σ, Eq ν) => G ν σ -> ( [SF ν σ] -> [S σ] ) -> [SF ν σ] -> [S σ]
 generate' _ _ [ ] = [ ]
 generate' g@Grammar{..} f q = sentences ++ f sententialForms
   where
-    sententialForms :: [SententialForm nonTerminal terminal]
-    sentences :: [Sentence terminal]
-    (sententialForms, sentences) = partitionEithers . fmap eitherSentence $ q'
+    sententialForms :: [SF ν σ]
+    sentences :: [S σ]
+    (sententialForms, sentences) = partitionEithers . fmap eitherS $ q'
 
-    q' :: [SententialForm nonTerminal terminal]
+    q' :: [SF ν σ]
     q' = do
         rule <- Set.toList rules
         sf <- q
-        expandSententialForm rule sf
+        expandSF rule sf
 
-expandSententialForm :: (Eq terminal, Eq nonTerminal)
-                     => Rule nonTerminal terminal
-                     -> SententialForm nonTerminal terminal
-                     -> [SententialForm nonTerminal terminal]
-expandSententialForm rule = catMaybes . fmap (fmap deselect . traverse (maybeApplyRule rule)) . subSequencesInContext
+expandSF :: (Eq σ, Eq ν) => Rule ν σ -> SF ν σ -> [SF ν σ]
+expandSF rule = catMaybes . fmap (fmap deselect . traverse (maybeApplyRule rule)) . subSequencesInContext
 
-eitherSentence :: SententialForm nonTerminal terminal
-               -> Either (SententialForm nonTerminal terminal) (Sentence terminal)
-eitherSentence s = maybe (Left s) Right . maybeSentence $ s
+eitherS :: SF ν σ -> Either (SF ν σ) (S σ)
+eitherS s = maybe (Left s) Right . maybeSentence $ s
 
-maybeApplyRule :: (Eq terminal, Eq nonTerminal)
-               => Rule nonTerminal terminal
-               -> SententialForm nonTerminal terminal
-               -> Maybe (SententialForm nonTerminal terminal)
+maybeApplyRule :: (Eq σ, Eq ν) => Rule ν σ -> SF ν σ -> Maybe (SF ν σ)
 maybeApplyRule rule s | s == leftSide rule = Just (rightSide rule)
                       | otherwise = Nothing
 
