@@ -1,5 +1,6 @@
 module Generator where
 
+import qualified Data.List as List
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Sequence (Seq)
@@ -9,17 +10,22 @@ import Data.Either
 import Data.Function
 
 import Grammar
+import Converge
 
 type G = Grammar
 type S σ = Sentence σ
 type SF ν σ = SententialForm ν σ
 
-generate :: (Eq σ, Eq ν) => G ν σ -> [S σ]
+generate :: (Eq σ, Eq ν, Show σ, Show ν) => G ν σ -> [Either String (S σ)]
 generate g@Grammar{..} = fix (generate' g) [[Left start]]
 
-generate' :: forall σ ν. (Eq σ, Eq ν) => G ν σ -> ( [SF ν σ] -> [S σ] ) -> [SF ν σ] -> [S σ]
+generate' :: forall σ ν. (Eq σ, Eq ν, Show σ, Show ν) => G ν σ -> ( [SF ν σ] -> [Either String (S σ)] ) -> [SF ν σ] -> [Either String (S σ)]
 generate' _ _ [ ] = [ ]
-generate' g@Grammar{..} f q = sentences ++ f sententialForms
+generate' g@Grammar{..} f q =
+    (Left "... iteration ...": fmap Right sentences)
+    ++ (Left "--- in works ---": fmap (Left . show) sententialForms)
+    ++ f (List.nub sententialForms)
+    ++ f ((List.nub . (fmap.fmap) Right) sentences)
   where
     sententialForms :: [SF ν σ]
     sentences :: [S σ]
