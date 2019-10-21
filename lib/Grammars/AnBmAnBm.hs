@@ -5,14 +5,15 @@ import qualified Data.Set as Set
 
 import Grammar
 
-data N = S | A | B deriving (Eq, Ord)
-
-g :: Grammar N Char
-g = grammar [S, A, B] ['a', 'b'] rules S
+g :: Grammar Char Char
+g = grammar (Set.fromList "SAB") (Set.fromList "ab") rules 'S'
   where
     rules = Set.fromList $
-        [ [Left S] := fmap Right "bab"
-        , fmap Right "ba" := [Right 'b', Right 'b', Left B, Right 'a']
-        , [Left B, Right 'a'] := [Right 'a', Left B]
-        , [Left B, Right 'b'] := fmap Right "bb"
+        [ "S" := "abab"
+        , "ba" := "bbBa"
+        , "Ba" := "aB"
+        , "Bb" := "bb"
+        , "ba" := "bAaa"
+        , "bA" := "Ab"
+        , "aA" := "aa"
         ]
