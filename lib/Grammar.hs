@@ -1,5 +1,7 @@
 module Grammar where
 
+import Data.String
+import Data.Char
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Data.Maybe
@@ -40,6 +42,12 @@ grammar nonTerminals terminals rules start
 type SententialForm nonTerminal terminal = [Either nonTerminal terminal]
 
 type Sentence terminal = [terminal]
+
+instance {-# overlapping #-} IsString (SententialForm Char Char) where
+    fromString = catMaybes . fmap fromChar
+        where fromChar c =
+                  if isUpper c then (Just . Left) c
+                     else if isLower c then (Just . Right) c else Nothing
 
 maybeSentence :: SententialForm nonTerminal terminal -> Maybe (Sentence terminal)
 maybeSentence xs = case partitionEithers xs of
