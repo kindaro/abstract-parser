@@ -25,6 +25,10 @@ library
     exposed-modules: Grammar
                    , Generator
                    , Zipper
+                   , Grammars.An
+                   , Grammars.AnBmAnBm
+                   , Grammars.TeaParty
+                   , Grammars.Turtle
 
 executable abstract-parser
     import: commons
